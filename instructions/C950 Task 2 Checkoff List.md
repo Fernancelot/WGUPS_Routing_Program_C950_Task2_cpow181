@@ -102,8 +102,8 @@
 - `truck.py` – Truck class definition
 - `package.py` – Package class definition
 - `hash_table.py` – Hash table implementation
-- `WGUPS Package File.xlsx` – Package data
-- `WGUPS Distance Table.xlsx` – Distance matrix
+- `packages.csv` – Package data
+- `distance.csv` – Distance matrix
 - `addresses.csv` – Address list
 - `README.md` – Project overview and instructions
 - `task2_documentation.docx` – Full project documentation

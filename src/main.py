@@ -1,7 +1,7 @@
 import datetime
 from load_data import load_addresses, load_distances, load_packages
 from hash_table import HashTable
-from distance_calculator import get_distance
+from distance import get_distance
 
 # Load data
 addresses = load_addresses('data/addresses.csv')
