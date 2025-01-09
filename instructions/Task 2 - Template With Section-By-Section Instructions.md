@@ -2,11 +2,16 @@
 
 [ Task 2 : Implementation Phase of the WGUPS Routing Program ]
 
-Christopher Powell  
+Christopher D Powell  (Fernancelot)
 Student ID 001307071  
 WGU Email: cpow181@wgu.edu  
 01/09/2025  
-C950 Data Structures and Algorithms II - C950
+C950 Data Structures and Algorithms II - Task 2
+Course Version NHP3
+Python Version: 3.13.1
+IDE: PyCharm 2024.1.4 (Professional Edition)
+Build #PY-241.18034.82, built on June 24, 2024
+OS: Windows 11
 ---
 ### A. Hash Table
 
