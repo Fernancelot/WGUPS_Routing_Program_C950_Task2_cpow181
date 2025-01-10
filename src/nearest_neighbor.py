@@ -2,6 +2,7 @@
 import datetime
 from distance import get_distance
 
+
 def nearest_neighbor(truck, addresses, distances):
     current_address = truck.current_address
     while truck.packages:

@@ -10,17 +10,14 @@ class HashTable:
         index = self._hash(key)
         self.table[index].append((key, value))
 
+    def load_packages(self, packages):
+        for package in packages:
+            package_id = int(package[0])
+            self.insert(package_id, package)
+
     def lookup(self, key):
         index = self._hash(key)
         for k, v in self.table[index]:
             if k == key:
                 return v
         return None
-
-# Example usage
-hash_table = HashTable()
-for package in packages:
-    package_id = int(package[0])
-    hash_table.insert(package_id, package)
-
-print(hash_table.lookup(1))  # Lookup package with ID 1
