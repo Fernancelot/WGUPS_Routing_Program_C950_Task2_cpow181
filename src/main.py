@@ -1,110 +1,95 @@
-'''
-[ Task 2 : Implementation Phase of the WGUPS Routing Program ]
-
-Christopher D Powell  (Fernancelot)
-Student ID 001307071
-WGU Email: cpow181@wgu.edu
-01/09/2025
-C950 Data Structures and Algorithms II - Task 2
-Course Version NHP3
-Python Version: 3.13.1
-IDE: PyCharm 2024.1.4 (Professional Edition)
-Build #PY-241.18034.82, built on June 24, 2025
-OS: Windows 11
-'''
-
 # main.py
+import os
 import datetime
-from load_data import load_addresses, load_distances, load_packages
 from hash_table import HashTable
-from distance import get_distance
-from truck import Truck
-from package import Package
+from load_data import load_addresses, load_distances, load_packages
+from scheduler import schedule_packages, create_trucks_for_run
 from nearest_neighbor import nearest_neighbor
+from package import Package
 
-# Load data from CSV files
-addresses = load_addresses('../data/addresses.csv')
-distances = load_distances('../data/distance.csv')
-packages_data = load_packages('../data/packages.csv')
+def print_all_package_statuses(packages):
+    for package in packages:
+        print(f"Package ID: {package.package_id}, Status: {package.status}")
 
-# Initialize hash table and insert packages
-hash_table = HashTable()
-for package_data in packages_data:
-    package = Package(*package_data[:8])
-    hash_table.insert(int(package.package_id), package)
+def lookup_package_status(packages, package_id, lookup_time):
+    for package in packages:
+        if package.package_id == package_id:
+            print(f"Package ID: {package.package_id}, Status at {lookup_time}: {package.status}")
+            return
+    print(f"Package ID {package_id} not found.")
 
-# Initialize trucks
-truck1 = Truck(1)
-truck2 = Truck(2)
-truck3 = Truck(3)
-
-# Load packages into trucks based on package ID
-for package_id in range(1, 41):
-    package = hash_table.lookup(int(package_id))
-    if package:
-        if package_id <= 16:
-            truck1.load_package(package)
-        elif package_id <= 32:
-            truck2.load_package(package)
-        else:
-            truck3.load_package(package)
-
-# Deliver packages using Nearest Neighbor algorithm
-nearest_neighbor(truck1, addresses, distances)
-nearest_neighbor(truck2, addresses, distances)
-nearest_neighbor(truck3, addresses, distances)
-
-def print_package_status(package_id):
-    package = hash_table.lookup(package_id)
-    if package:
-        print(f"Package ID: {package.package_id}")
-        print(f"Address: {package.address}")
-        print(f"City: {package.city}")
-        print(f"State: {package.state}")
-        print(f"Zip: {package.zip_code}")
-        print(f"Delivery Deadline: {package.deadline}")
-        print(f"Weight: {package.weight}")
-        print(f"Special Notes: {package.notes}")
-        print(f"Status: {package.status}")
-        print(f"Delivery Time: {package.delivery_time}")
-    else:
-        print(f"Package ID {package_id} not found.")
-
-def print_all_packages_status():
-    for package_id in range(1, 41):
-        print_package_status(package_id)
-        print('-' * 40)
-
-def print_total_mileage():
-    total_mileage = truck1.mileage + truck2.mileage + truck3.mileage
-    print(f"Total mileage traveled by all trucks: {total_mileage:.2f} miles")
+def lookup_all_package_statuses(packages, lookup_time):
+    for package in packages:
+        print(f"Package ID: {package.package_id}, Status at {lookup_time}: {package.status}")
 
 def main():
-    while True:
-        print("\n WGUPS - Western Governors uNDERGRADUATE Parcel Service")
-        print("\nWGUPS Routing Program")
-        print("1. Print all package statuses")
-        print("2. Get a single package status")
-        print("3. Get all package statuses at a specific time")
-        print("4. Print total mileage traveled by all trucks")
-        print("5. Exit")
-        # print("? NEVER Select This Choice !!")
+    # 1) Load data
+    addresses = load_addresses('../data/addresses.csv')
+    distances = load_distances('../data/distance.csv')
+    packages_data = load_packages('../data/packages.csv')
 
+    # 2) Insert all packages into a HashTable
+    hash_table = HashTable()
+    for data in packages_data:
+        package_id = int(data[0])
+        hash_table.insert(package_id, data)
+
+    # Convert to Package objects
+    all_packages = []
+    for i in range(len(packages_data)):
+        pkg_data = hash_table.lookup(i + 1)
+        if pkg_data:
+            p = Package(int(pkg_data[0]),
+                        pkg_data[1],
+                        pkg_data[2],
+                        pkg_data[3],
+                        pkg_data[4],
+                        pkg_data[5],
+                        pkg_data[6],
+                        pkg_data[7])
+            all_packages.append(p)
+
+    # 3) Schedule packages across multiple runs, considering deadlines
+    runs = schedule_packages(all_packages, num_trucks=2, capacity=16)
+
+    grand_total_mileage = 0
+
+    # 4) Execute each run
+    for run_index, run_data in enumerate(runs, start=1):
+        trucks = create_trucks_for_run(run_data)
+        print(f"=== Starting Run {run_index} ===")
+
+        # Each truck uses nearest_neighbor route, constrained to 140 miles
+        for truck in trucks:
+            nearest_neighbor(truck, addresses, distances, max_distance=140.0)
+            print(f"Truck {truck.truck_id} finished run with {truck.mileage:.2f} miles.")
+            grand_total_mileage += truck.mileage
+
+        print()
+
+    # 5) Final summary
+    print(f"All runs complete. Grand total mileage: {grand_total_mileage:.2f}")
+
+    # User Interface
+    while True:
+        print("\nMenu:")
+        print("1. Print all package statuses and total mileage")
+        print("2. Lookup single package status at a specific time")
+        print("3. Lookup all package statuses at a specific time")
+        print("4. Exit")
         choice = input("Enter your choice: ")
 
-        if choice == '?':
-            print()
         if choice == '1':
-            print_all_packages_status()
+            print_all_package_statuses(all_packages)
+            print(f"Total mileage: {grand_total_mileage:.2f}")
         elif choice == '2':
             package_id = int(input("Enter package ID: "))
-            print_package_status(package_id)
+            lookup_time = input("Enter time (HH:MM:SS): ")
+            lookup_package_status(all_packages, package_id, lookup_time)
         elif choice == '3':
-            time = input("Enter time (HH:MM:SS): ")
-            # Implement functionality to get all package statuses at a specific time
+            lookup_time = input("Enter time (HH:MM:SS): ")
+            lookup_all_package_statuses(all_packages, lookup_time)
         elif choice == '4':
-            print_total_mileage()
-        elif choice == '5':
             break
         else:
             print("Invalid choice. Please try again.")

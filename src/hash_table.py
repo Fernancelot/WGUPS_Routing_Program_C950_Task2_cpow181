@@ -1,3 +1,5 @@
+# hash_table.py
+
 class HashTable:
     def __init__(self, size=40):
         self.size = size
